@@ -462,7 +462,7 @@ export default function Dashboard({ user }) {
         </div>
       )}
 
-      {showAdd && <AddProblem onAdd={addProblem} onClose={() => setShowAdd(false)} />}
+      {showAdd && <AddProblem onAdd={addProblem} onClose={() => setShowAdd(false)} savedKey={savedKey} />}
       {showAI && <AIPanel problems={problems} apiKey={savedKey} onClose={() => setShowAI(false)} />}
     </div>
   );

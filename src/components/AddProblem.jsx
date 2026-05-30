@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { colors, font, radius } from "../styles/theme";
 import { DIFFICULTIES, TOPICS, STATUSES, extractSlug, slugToTitle } from "../utils/helpers";
 
-export default function AddProblem({ onAdd, onClose }) {
+export default function AddProblem({ onAdd, onClose, savedKey }) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [difficulty, setDifficulty] = useState("Medium");
@@ -16,11 +16,31 @@ export default function AddProblem({ onAdd, onClose }) {
     if (slug) setTitle(slugToTitle(slug));
   }, [url]);
 
-  function handleAdd() {
+ async function handleAdd() {
     if (!url.trim()) { setError("Please enter a LeetCode URL"); return; }
     const slug = extractSlug(url);
     if (!slug) { setError("Invalid LeetCode URL"); return; }
-    onAdd({ url: url.trim(), slug, title: title || slugToTitle(slug), difficulty, topic, status, notes });
+    
+    // Auto-fetch company tags via Groq
+    let companies = [];
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${savedKey}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: `Which top tech companies are known to ask the LeetCode problem "${title || slugToTitle(slug)}" in coding interviews? Reply ONLY with a JSON array of company names, max 6, like: ["Google","Amazon","Microsoft"]. No explanation.` }],
+          max_tokens: 100,
+        })
+      });
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || "[]";
+      companies = JSON.parse(text.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      companies = [];
+    }
+
+    onAdd({ url: url.trim(), slug, title: title || slugToTitle(slug), difficulty, topic, status, notes, companies });
     onClose();
   }
 

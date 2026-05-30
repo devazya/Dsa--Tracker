@@ -116,6 +116,13 @@ export default function ProblemCard({ problem, onUpdate, onDelete }) {
             fontSize: "11px", padding: "2px 7px", borderRadius: radius.sm,
             background: colors.bgTertiary, color: colors.textSecondary,
           }}>{problem.topic}</span>
+          {problem.companies?.length > 0 && problem.companies.slice(0, 3).map((company, i) => (
+  <span key={i} style={{
+    fontSize: "11px", padding: "2px 7px", borderRadius: radius.sm,
+    background: "rgba(59,130,246,0.1)", color: colors.blue,
+    fontWeight: "600",
+  }}>{company}</span>
+))}
           <span style={{
             fontSize: "11px", fontWeight: "700",
             padding: "2px 8px", borderRadius: radius.sm,
